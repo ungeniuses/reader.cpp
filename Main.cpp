@@ -271,8 +271,12 @@ int main(int argc, char *argv[])
 {
     enableRawMode();
     initEditor();
-    if (argc < 2) die("no file provided");
+    if (argc < 2)
+        die("no file provided");
 
+    int speed{250000};
+    if (argc == 3)
+        speed = *((int*)argv[2]);
     FILE *f = fopen(argv[1], "r");
     if (!f) die("fopen");
 
