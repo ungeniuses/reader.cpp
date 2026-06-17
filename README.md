@@ -12,7 +12,7 @@ g++ Main.cpp -o main
 How to use
 
 ```
-main <file_name>
+main <file_name> <time-interval>
 ```
 
 ## // Licence
