@@ -1,5 +1,6 @@
 /* main.cpp - reader: RSVP-style terminal word reader */
 
+#include <thread>
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
@@ -15,18 +16,18 @@
 int
 main(int argc, char *argv[])
 {
-	EditorCfg             *cfg;
-	FILE                  *fp;
-	long                   size;
-	int                    speed;
-	std::string            content;
-	std::vector<std::string> data;
-	size_t                 i;
-	std::string           *k;
+	EditorCfg                 *cfg;
+	FILE                      *fp;
+	long                      size;
+	std::string               content;
+	std::vector<std::string>  data;
+	size_t                    i;
+	std::string               *k;
+    SCPCQueue<char>           queue(1024);
 
 	cfg   = (EditorCfg *)malloc(sizeof(EditorCfg));
-	speed = 250000;
-
+	cfg->speed = 250000;
+    int& speed = cfg->speed;
 	if (!cfg)
 		die("[err]: malloc failed\n");
 
@@ -58,6 +59,8 @@ main(int argc, char *argv[])
 
 	split(content, data, " \t\r\n,;:!?");
 
+	std::thread input_thread(producer, std::ref(queue));
+
 	for (;;) {
 		for (i = 0; i < data.size(); i++) {
 			k = &data[i];
@@ -65,16 +68,26 @@ main(int argc, char *argv[])
 				continue;
 			window_size_callback(cfg);
 			editor_refresh_scrn(cfg);
+            consumer(queue, cfg);
 			{
 				int         mid       = (int)k->size() / 2;
 				int         remaining = (int)k->size() - mid - 1;
 				const char *cstr      = k->c_str();
+                const char  message[]   = "Current delay: ";
+                char        buf[32];
+                int         len{};
+
 
 				write(STDOUT_FILENO, cstr, mid);
 				write(STDOUT_FILENO, "\x1b[31m", 5);
 				write(STDOUT_FILENO, cstr + mid, 1);
 				write(STDOUT_FILENO, "\x1b[m", 3);
 				write(STDOUT_FILENO, cstr + mid + 1, remaining);
+
+                write(STDOUT_FILENO, "\x1b[H", 3);
+                write(STDOUT_FILENO, message, sizeof(message)-1);
+                len = snprintf(buf, sizeof(buf), "%d", cfg->speed);
+                write(STDOUT_FILENO, buf, len);
 			}
 			usleep(speed);
 		}

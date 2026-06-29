@@ -144,7 +144,7 @@ window_size_callback(EditorCfg *cfg)
 
 	if (get_window_size(&rows, &cols) < 0) {
 		fprintf(stderr,
-		    "[err]: window_size_callback: get_window_size\n");
+                "[err]: window_size_callback: get_window_size\n");
 		return;
 	}
 	if (cfg->screenrows != rows || cfg->screencols != cols) {
@@ -188,7 +188,7 @@ editor_refresh_scrn(EditorCfg *cfg)
 	ab_append(&ab, "\x1b[2J", 4);
 	memset(buff, 0, sizeof(buff));
 	snprintf(buff, sizeof(buff), "\x1b[%d;%dH",
-	    cfg->screenrows / 2, cfg->screencols / 2);
+             cfg->screenrows / 2, cfg->screencols / 2);
 	ab_append(&ab, buff, strlen(buff));
 	ab_write(&ab);
 	ab_free(&ab);
@@ -226,4 +226,46 @@ split(const std::string &txt,
 		pos         = txt.find_first_of(delims, initial_pos);
 	}
 	return strings.size();
+}
+
+static void
+editor_process_key_process(char c, EditorCfg *cfg)
+{
+
+    switch (c)
+    {
+    case CTRL_KEY('q'):
+        write(STDOUT_FILENO, "\x1b[2J", 4);
+        write(STDOUT_FILENO, "\x1b[H", 3);
+        exit(0);
+        break;
+    case CTRL_KEY('j'):
+        cfg->speed += 10000;
+        break;
+    case CTRL_KEY('k'):
+        cfg->speed -= 10000;
+        break;
+    }
+}
+
+void
+producer(SCPCQueue<char> &queue)
+{
+	for (;;) {
+		char value = editor_readkey();
+        queue.push(value);
+	}
+}
+
+void
+consumer(SCPCQueue<char> &queue, EditorCfg *cfg)
+{
+    for (;;) {
+        char value{};
+        if (queue.pop(value)) {
+            editor_process_key_process(value, cfg);
+        } else {
+            break;
+        }
+    }
 }
