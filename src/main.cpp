@@ -1,6 +1,5 @@
 /* main.cpp - reader: RSVP-style terminal word reader */
 
-#include <thread>
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
@@ -9,6 +8,7 @@
 #include <unistd.h>
 
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "../include/reader.h"
@@ -26,10 +26,11 @@ main(int argc, char *argv[])
     SCPCQueue<char>           queue(1024);
 
 	cfg   = (EditorCfg *)malloc(sizeof(EditorCfg));
-	cfg->speed = 250000;
-    int& speed = cfg->speed;
 	if (!cfg)
 		die("[err]: malloc failed\n");
+
+	cfg->speed = 250000;
+    int& speed = cfg->speed;
 
 	enable_raw(cfg);
 	init_editor(cfg);
