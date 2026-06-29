@@ -59,6 +59,7 @@ void init_editor(editor_cfg *cfg);
 void die(const char *s);
 void disable_raw(editor_cfg *cfg);
 void enable_raw(editor_cfg *cfg);
+void window_size_callback(editor_cfg *cfg);
 void editor_refresh_scrn(editor_cfg *cfg);
 
 char editor_readkey();

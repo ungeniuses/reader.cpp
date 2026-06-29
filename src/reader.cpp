@@ -1,5 +1,7 @@
-#include "reader.h"
+#include "../include/reader.h"
 #include <csignal>
+#include <iostream>
+
 
 void die(const char *s) {
 	write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -101,6 +103,18 @@ int get_window_size(int *rows, int *cols) {
 	*cols = w_size.ws_col;
 
 	return 0;
+}
+
+void window_size_callback(editor_cfg *cfg) {
+    int a{};
+    int b{};
+
+    if (get_window_size(&a, &b) != 0)
+        std::cout << "[err]: window_size_callback: get_window_size\n";
+    if ((cfg->screencols != a) || (cfg->screencols != b)) {
+        cfg->screenrows = a;
+        cfg->screencols = b;
+    }
 }
 
 void editor_refresh_scrn(editor_cfg *cfg) {

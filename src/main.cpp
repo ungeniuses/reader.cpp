@@ -1,4 +1,4 @@
-#include "reader.h"
+#include "../include/reader.h"
 
 int main(int argc, char *argv[]) {
 	try {
@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 		while(1) {
 			for (std::string &k: data) {
 				if (k.empty()) continue;
+                window_size_callback(cfg);
 				editor_refresh_scrn(cfg);
 				int mid = k.size() / 2;
 
